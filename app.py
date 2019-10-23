@@ -1,13 +1,18 @@
 # Python SQL toolkit and Object Relational Mapper
+# import dependencies
+import numpy as np
+import pandas as pd
+import datetime as dt
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, inspect, func
+from flask import Flask, jsonify
 
-import numpy as np
-import pandas as pd
-import datetime as dt
 
+######################
+### Setup Database
+######################
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 # reflect an existing database into a new model
 Base = automap_base()
@@ -21,22 +26,32 @@ Station = Base.classes.station
 # Create a session(link) from Python to the DB
 session = Session(engine)
 
-# Import Flask
-from flask import Flask, jsonify
 
+######################
+### Setup Flask
+######################
 # Create an app, passing __name__
 app = Flask(__name__)
 
-# Define routes
+######################
+### Flask Routes
+######################
 @app.route('/')
 def index():
     return (
         f"Available Routes:<br/>"
+        f"<br/>"
         f"/api/v1.0/precipitation<br/>"
+        f"<br/>"
         f"/api/v1.0/stations<br/>"
+        f"<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start><br/>"
-        f"/api/v1.0/<start>/<end>"
+        f"<br/>"
+        f"/api/v1.0/start<br/>"
+        f" 'When given start date (yyyy-mm-dd) returns min/avg/max temperature for all dates after or on date.'<br/>"
+        f"<br/>"
+        f"/api/v1.0/start/end<br/>"
+        f" 'When given start and end date (yyyy-mm-dd), returns min/avg/max temperature for dates between them inclusive'<br/>"
     )
 
 
@@ -115,6 +130,9 @@ def find_tmps2(start, end):
     return jsonify(result)
 
 
+######################
+### helper functions
+######################
 def find_date():
     """ Use DB to retieve a year ago from the last data point """
     # Calculate the date 1 year ago from the last data point in the database
@@ -126,6 +144,8 @@ def find_date():
 
     return year_ago
 
-
+######################
+### run Flask App
+######################
 if __name__ == '__main__':
     app.run(debug=True)
