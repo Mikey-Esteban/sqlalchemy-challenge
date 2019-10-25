@@ -23,10 +23,6 @@ Base.prepare(engine, reflect=True)
 Measurement = Base.classes.measurement
 Station = Base.classes.station
 
-# Create a session(link) from Python to the DB
-session = Session(engine)
-
-
 ######################
 ### Setup Flask
 ######################
@@ -60,8 +56,11 @@ def percipitation():
     """ Convert the query results to a Dictionary using date as the key
     and prcp as the value.
     Return the JSON representation of your dictionary. """
+
+    session = Session(engine)
     # Perform a query to retrieve the data and precipitation scores
     results = session.query(Measurement.date, Measurement.prcp).all()
+    session.close()
 
     # Create a dictionary from the prcp data and append to prcp_data
     prcp_data = []
@@ -77,7 +76,10 @@ def percipitation():
 def station():
     """Return a JSON list of stations from the dataset"""
     # Query to retrieve station data
+
+    session = Session(engine)
     result = session.query(Station.station, Station.name).all()
+    session.close()
 
     return jsonify(result)
 
@@ -90,8 +92,10 @@ def tobs():
     year_ago = find_date()
 
     # Query to retrieve the station, date, tobs
+    session = Session(engine)
     results = session.query(Measurement.station, Measurement.date, Measurement.tobs)\
     .filter(Measurement.date > year_ago).all()
+    session.close()
 
     # Create a dictionary from the results
     tobs_data = []
@@ -110,9 +114,11 @@ def find_tmps(start):
     When given the start only, calculate TMIN, TAVG, and TMAX for all dates
     greater than and equal to the start date."""
     # Query for the tmin tavg tmax greater after the given date
+    session = Session(engine)
     result = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs),
             func.max(Measurement.tobs))\
             .filter(Measurement.date >= start).all()
+    session.close()
 
     return jsonify(result)
 
@@ -122,10 +128,12 @@ def find_tmps2(start, end):
     """ Return a JSON list of the minimum temperature, the average temperature,
     and the max temperature for a given start or start-end range. """
     # Query for the tmin tavg tmax greater after the start date and before the end date
+    session = Session(engine)
     result = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs),
             func.max(Measurement.tobs))\
             .filter(Measurement.date >= start)\
             .filter(Measurement.date <= end).all()
+    session.close()
 
     return jsonify(result)
 
